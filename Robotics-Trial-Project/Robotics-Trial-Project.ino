@@ -50,19 +50,32 @@ void loop() {
   Wire.endTransmission(false);  // restarts transmission, doesn't end it
 
 
-  Wire.requestFrom(MPU_addr, 4 , true);  //reads ACCEL_XOUT_H, ACCEL_XOUT_H, ACCEL_YOUT_H, ACCEL_YOUT_H(true ends the transmission after finished)
+  Wire.requestFrom(MPU_addr, 6 , true);  //reads ACCEL_XOUT_H, ACCEL_XOUT_H, ACCEL_YOUT_H, ACCEL_YOUT_H(true ends the transmission after finished)
 
   X_out = (Wire.read() << 8 | Wire.read()); // this makes it so that it reads 8 bits because i2c reads 8 bits at a time 
   X_out = X_out / 16384;  // the value is divided by 16384 because thats the LSB Sensitivity on page 29 of the register 
   Y_out = (Wire.read() << 8 | Wire.read());
   Y_out = Y_out / 16384;
+  Z_out = (Wire.read() << 8 | Wire.read());
+  Z_out = Y_out / 16384;
+  
+  //in the default position I want, the x_out value is -1, and y_out is 0
+  X_out+=1; // 
+
+  //Change X_out and Y_out to angles
+  X_out=X_out*100;
+  Y_out=Y_out*100;
+
   
   
   //prints on the serial monitor
-  Serial.print("Xa= ");
+  Serial.print("Y = ");
+  Serial.print(Y_out);
+  Serial.println(" degrees");
+  Serial.print("X = ");  
   Serial.print(X_out);
-  Serial.print("   Ya=");  
-  Serial.println(Y_out);
+  Serial.println(" degrees");
+  
 
   //checking for serial input, saves the  user input as the offset 
   if (Serial.available() > 0) {
@@ -71,6 +84,6 @@ void loop() {
   Serial.print("Offset: ");
   Serial.println(user_offset);
 
-  servo.write(start_angle + user_offset - Y_out*100); //servo always pointing up
+  servo.write(start_angle + user_offset - Y_out); //servo always pointing up
   delay(100);
 }
