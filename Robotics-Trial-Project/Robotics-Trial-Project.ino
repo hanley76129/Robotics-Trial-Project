@@ -3,7 +3,6 @@
 #include <Servo.h>  //Servo Library
 
 Servo servo;  //create object for the Servo Library
-
 const int MPU_addr = 0x68;  //default I2C address of the MPU is 0x68
 int start_angle = 90;       // default position of the servo
 int user_offset;            // stores what offset the user wants
@@ -12,8 +11,6 @@ float roll, pitch;          // variable for roll and pitch
 
 
 void setup() {
-  
-
   //Begins the I2C communication
   Serial.begin(9600);                 // opens serial port and sets data rate (baud) to 9600
   Serial.println("Initial Offset ");  // prints text to the serial port
@@ -44,20 +41,14 @@ void setup() {
 void loop() {
   //starts reading the registers we need
   Wire.beginTransmission(MPU_addr);  //starts transmission with the mpu
-
   Wire.write(0x3B);  // to start, reads register ACCEL_XOUT_H
-
   Wire.endTransmission(false);  // restarts transmission, doesn't end it
-
-
-  Wire.requestFrom(MPU_addr, 6 , true);  //reads ACCEL_XOUT_H, ACCEL_XOUT_H, ACCEL_YOUT_H, ACCEL_YOUT_H(true ends the transmission after finished)
+  Wire.requestFrom(MPU_addr, 4 , true);  //reads ACCEL_XOUT_H, ACCEL_XOUT_H, ACCEL_YOUT_H, ACCEL_YOUT_H(true ends the transmission after finished)
 
   X_out = (Wire.read() << 8 | Wire.read()); // this makes it so that it reads 8 bits because i2c reads 8 bits at a time 
   X_out = X_out / 16384;  // the value is divided by 16384 because thats the LSB Sensitivity on page 29 of the register 
   Y_out = (Wire.read() << 8 | Wire.read());
   Y_out = Y_out / 16384;
-  Z_out = (Wire.read() << 8 | Wire.read());
-  Z_out = Y_out / 16384;
   
   //in the default position I want, the x_out value is -1, and y_out is 0
   X_out+=1; // 
@@ -66,8 +57,6 @@ void loop() {
   X_out=X_out*100;
   Y_out=Y_out*100;
 
-  
-  
   //prints on the serial monitor
   Serial.print("Y = ");
   Serial.print(Y_out);
@@ -76,7 +65,6 @@ void loop() {
   Serial.print(X_out);
   Serial.println(" degrees");
   
-
   //checking for serial input, saves the  user input as the offset 
   if (Serial.available() > 0) {
     user_offset = Serial.readString().toInt();
